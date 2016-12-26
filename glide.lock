@@ -1,0 +1,10 @@
+hash: 546a81b30a513cf4c83f067baf2d8ef2c279765d716ed13cd3d59b4c65066065
+updated: 2016-12-26T21:32:39.888187707+09:00
+imports:
+- name: github.com/couchbase/gocb
+  version: 6fca8af693ca20d33fd8427a09636362061a3b71
+- name: gopkg.in/brett19/jsonx.v1
+  version: 5b7baa20429a46a5543ee259664cc86502738cad
+- name: gopkg.in/couchbase/gocbcore.v2
+  version: 22d72f05785ba26be033aa8b6726435b5e50a7a0
+testImports: []
