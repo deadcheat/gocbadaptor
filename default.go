@@ -8,24 +8,44 @@ import (
 )
 
 // DefaultCouchAdaptor default adaptor struct
-type DefaultCouchAdaptor struct{}
+type DefaultCouchAdaptor struct {
+	Env    *conf.Env
+	Bucket *gocb.Bucket
+}
 
-// NewCouchAdaptor 新しいAdaptorインスタンスを作成
-func NewCouchAdaptor() *DefaultCouchAdaptor {
+// NewDefaultCouchAdaptor 新しいAdaptorインスタンスを作成
+func NewDefaultCouchAdaptor() *DefaultCouchAdaptor {
 	return &DefaultCouchAdaptor{}
 }
 
-// Open open bucket using config struct
-func (*DefaultCouchAdaptor) Open(c *conf.Env) *gocb.Bucket {
-	return c.OpenBucket()
+// Open open adaptor.Bucket using arguments
+func (adaptor DefaultCouchAdaptor) Open(connection, bucket, password *string, expiry uint32) CouchBaseAdaptor {
+	adaptor.Env = &conf.Env{
+		ConnectString: connection,
+		BucketName:    bucket,
+		Password:      password,
+		CacheExpiry:   expiry,
+	}
+	e := *adaptor.Env
+	adaptor.Bucket = e.OpenBucket()
+	return adaptor
 }
 
-// Get invoke gocb.Bucket.Get
-func (*DefaultCouchAdaptor) Get(b *gocb.Bucket, key string) (cas gocb.Cas, data []byte, ok bool) {
-	if b == nil {
+// OpenWithConfig open adaptor.Bucket using config struct
+func (adaptor DefaultCouchAdaptor) OpenWithConfig(env *conf.Env) CouchBaseAdaptor {
+	adaptor.Env = env
+	e := *env
+	adaptor.Bucket = e.OpenBucket()
+	return adaptor
+}
+
+// Get invoke gocb.adaptor.Bucket.Get
+func (adaptor DefaultCouchAdaptor) Get(key string) (cas gocb.Cas, data []byte, ok bool) {
+	if adaptor.Bucket == nil {
 		log.Printf("CouchBase Connections may not be establlished. skip this process.")
 		return 0, nil, false
 	}
+	b := *adaptor.Bucket
 	cas, err := b.Get(key, &data)
 	if err != nil {
 		log.Printf("Didn't hit any data for key: %s or err: %+v \n", key, err)
@@ -35,42 +55,55 @@ func (*DefaultCouchAdaptor) Get(b *gocb.Bucket, key string) (cas gocb.Cas, data 
 	return cas, data, true
 }
 
-// Insert invoke gocb.Bucket.Insert
-func (*DefaultCouchAdaptor) Insert(b *gocb.Bucket, key string, data []byte, expiry uint32) (cas gocb.Cas, ok bool) {
-	if b == nil {
+// Insert invoke gocb.adaptor.Bucket.Insert
+func (adaptor DefaultCouchAdaptor) Insert(key string, data []byte) (cas gocb.Cas, ok bool) {
+	if adaptor.Bucket == nil {
 		return 0, false
 	}
-	cas, err := b.Insert(key, data, expiry)
+	b := *adaptor.Bucket
+	cas, err := b.Insert(key, data, adaptor.Env.CacheExpiry)
 	if err != nil {
 		log.Printf("Couldn't insert for key: %s or err: %+v \n", key, err)
 		return cas, false
 	}
-	log.Printf("insert to bucket key: %s", key)
+	log.Printf("insert to adaptor.Bucket key: %s", key)
 	return cas, true
 }
 
-// Upsert invoke gocb.Bucket.Upsert
-func (*DefaultCouchAdaptor) Upsert(b *gocb.Bucket, key string, data []byte, expiry uint32) (cas gocb.Cas, ok bool) {
-	if b == nil {
+// Upsert invoke gocb.adaptor.Bucket.Upsert
+func (adaptor DefaultCouchAdaptor) Upsert(key string, data []byte) (cas gocb.Cas, ok bool) {
+	if adaptor.Bucket == nil {
 		return 0, false
 	}
-	cas, err := b.Upsert(key, data, expiry)
+	b := *adaptor.Bucket
+	cas, err := b.Upsert(key, data, adaptor.Env.CacheExpiry)
 	if err != nil {
 		log.Printf("Couldn't upsert for key: %s or err: %+v \n", key, err)
 		return cas, false
 	}
-	log.Printf("insert to bucket key: %s", key)
+	log.Printf("upsert to adaptor.Bucket key: %s", key)
 	return cas, true
 }
 
 // N1qlQuery prepare query and execute
-func (*DefaultCouchAdaptor) N1qlQuery(b *gocb.Bucket, q string, params interface{}) (r gocb.QueryResults, err error) {
+func (adaptor DefaultCouchAdaptor) N1qlQuery(q string, params interface{}) (r gocb.QueryResults, err error) {
+	if adaptor.Bucket == nil {
+		return nil, nil
+	}
 	nq := gocb.NewN1qlQuery(q)
+	b := *adaptor.Bucket
 	r, err = b.ExecuteN1qlQuery(nq, params)
 	if err != nil {
 		log.Printf("Couldn't execute query for query: %s params: %+v or err: %+v \n", q, params, err)
 		return r, err
 	}
-	log.Printf("succeeded to execute query: %s , params: %+v ,  result: %+v", q, params, r.Metrics())
+	r.Close()
+	log.Printf("succeeded to execute query: %s , params: %+v", q, params)
 	return r, err
+}
+
+// ExpiresIn overwrite Env.CacheExpiry
+func (adaptor DefaultCouchAdaptor) ExpiresIn(sec uint32) CouchBaseAdaptor {
+	adaptor.Env.CacheExpiry = sec
+	return adaptor
 }

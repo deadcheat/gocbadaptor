@@ -2,3 +2,6 @@ package: github.com/deadcheat/gocbadaptor
 import:
 - package: github.com/couchbase/gocb
   version: ~1.2.0
+- package: github.com/golang/mock
+  subpackages:
+  - gomock

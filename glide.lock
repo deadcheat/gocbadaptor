@@ -1,8 +1,12 @@
-hash: 546a81b30a513cf4c83f067baf2d8ef2c279765d716ed13cd3d59b4c65066065
-updated: 2016-12-26T21:32:39.888187707+09:00
+hash: 28943f5dc0f23ed11c1b8f62b1c5b00ec32468e66e6083e60701a63e122dd626
+updated: 2016-12-27T21:50:11.688902962+09:00
 imports:
 - name: github.com/couchbase/gocb
   version: 6fca8af693ca20d33fd8427a09636362061a3b71
+- name: github.com/golang/mock
+  version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
+  subpackages:
+  - gomock
 - name: gopkg.in/brett19/jsonx.v1
   version: 5b7baa20429a46a5543ee259664cc86502738cad
 - name: gopkg.in/couchbase/gocbcore.v2

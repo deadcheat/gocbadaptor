@@ -6,11 +6,13 @@ import (
 	"github.com/couchbase/gocb"
 )
 
-// CouchAdaptor CouchBase接続アダプタ
-type CouchAdaptor interface {
-	Open(couchenv *conf.Env) *gocb.Bucket
-	Get(b *gocb.Bucket, key string) (cas gocb.Cas, data []byte, ok bool)
-	Insert(b *gocb.Bucket, key string, data []byte, expiry uint32) (cas gocb.Cas, ok bool)
-	Upsert(b *gocb.Bucket, key string, data []byte, expiry uint32) (cas gocb.Cas, ok bool)
-	N1qlQuery(b *gocb.Bucket, q string, params interface{}) (gocb.QueryResults, error)
+// CouchBaseAdaptor CouchBase接続アダプタ
+type CouchBaseAdaptor interface {
+	Open(connection, bucket, password *string, expiry uint32) CouchBaseAdaptor
+	OpenWithConfig(env *conf.Env) CouchBaseAdaptor
+	ExpiresIn(sec uint32) CouchBaseAdaptor
+	Get(key string) (cas gocb.Cas, data []byte, ok bool)
+	Insert(key string, data []byte) (cas gocb.Cas, ok bool)
+	Upsert(key string, data []byte) (cas gocb.Cas, ok bool)
+	N1qlQuery(q string, params interface{}) (r gocb.QueryResults, err error)
 }
