@@ -10,7 +10,7 @@ import (
 // DefaultCouchAdaptor default adaptor struct
 type DefaultCouchAdaptor struct {
 	Environment *conf.Env
-	Bucket      *gocb.Bucket
+	CouchBucket *gocb.Bucket
 }
 
 // NewDefaultCouchAdaptor 新しいAdaptorインスタンスを作成
@@ -18,13 +18,18 @@ func NewDefaultCouchAdaptor() *DefaultCouchAdaptor {
 	return &DefaultCouchAdaptor{}
 }
 
-// Env return Env
+// Env return Environment
 func (adaptor DefaultCouchAdaptor) Env() *conf.Env {
 	return adaptor.Environment
 }
 
+// Bucket return CouchBucket
+func (adaptor DefaultCouchAdaptor) Bucket() *gocb.Bucket {
+	return adaptor.CouchBucket
+}
+
 // Open open adaptor.Bucket using arguments
-func (adaptor DefaultCouchAdaptor) Open(connection, bucket, password *string, expiry uint32) CouchBaseAdaptor {
+func (adaptor DefaultCouchAdaptor) Open(connection, bucket, password string, expiry uint32) CouchBaseAdaptor {
 	adaptor.Environment = &conf.Env{
 		ConnectString: connection,
 		BucketName:    bucket,
@@ -32,7 +37,7 @@ func (adaptor DefaultCouchAdaptor) Open(connection, bucket, password *string, ex
 		CacheExpiry:   expiry,
 	}
 	e := *adaptor.Environment
-	adaptor.Bucket = e.OpenBucket()
+	adaptor.CouchBucket = e.OpenBucket()
 	return adaptor
 }
 
@@ -40,7 +45,7 @@ func (adaptor DefaultCouchAdaptor) Open(connection, bucket, password *string, ex
 func (adaptor DefaultCouchAdaptor) OpenWithConfig(env *conf.Env) CouchBaseAdaptor {
 	adaptor.Environment = env
 	e := *env
-	adaptor.Bucket = e.OpenBucket()
+	adaptor.CouchBucket = e.OpenBucket()
 	return adaptor
 }
 
@@ -50,7 +55,7 @@ func (adaptor DefaultCouchAdaptor) Get(key string) (cas gocb.Cas, data []byte, o
 		log.Printf("CouchBase Connections may not be establlished. skip this process.")
 		return 0, nil, false
 	}
-	b := *adaptor.Bucket
+	b := *adaptor.CouchBucket
 	cas, err := b.Get(key, &data)
 	if err != nil {
 		log.Printf("Didn't hit any data for key: %s or err: %+v \n", key, err)
@@ -65,7 +70,7 @@ func (adaptor DefaultCouchAdaptor) Insert(key string, data []byte) (cas gocb.Cas
 	if adaptor.Bucket == nil {
 		return 0, false
 	}
-	b := *adaptor.Bucket
+	b := *adaptor.CouchBucket
 	cas, err := b.Insert(key, data, adaptor.Environment.CacheExpiry)
 	if err != nil {
 		log.Printf("Couldn't insert for key: %s or err: %+v \n", key, err)
@@ -80,7 +85,7 @@ func (adaptor DefaultCouchAdaptor) Upsert(key string, data []byte) (cas gocb.Cas
 	if adaptor.Bucket == nil {
 		return 0, false
 	}
-	b := *adaptor.Bucket
+	b := *adaptor.CouchBucket
 	cas, err := b.Upsert(key, data, adaptor.Environment.CacheExpiry)
 	if err != nil {
 		log.Printf("Couldn't upsert for key: %s or err: %+v \n", key, err)
@@ -96,13 +101,12 @@ func (adaptor DefaultCouchAdaptor) N1qlQuery(q string, params interface{}) (r go
 		return nil, nil
 	}
 	nq := gocb.NewN1qlQuery(q)
-	b := *adaptor.Bucket
+	b := *adaptor.CouchBucket
 	r, err = b.ExecuteN1qlQuery(nq, params)
 	if err != nil {
 		log.Printf("Couldn't execute query for query: %s params: %+v or err: %+v \n", q, params, err)
 		return r, err
 	}
-	r.Close()
 	log.Printf("succeeded to execute query: %s , params: %+v", q, params)
 	return r, err
 }
