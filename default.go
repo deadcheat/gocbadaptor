@@ -7,20 +7,20 @@ import (
 	"github.com/deadcheat/gocbadaptor/conf"
 )
 
-// DefaultCouchAdapter アダプター
-type DefaultCouchAdapter struct{}
+// DefaultCouchAdapter default adapter struct
+type DefaultCouchAdaptor struct{}
 
 // NewCouchAdapter 新しいAdapterインスタンスを作成
-func NewCouchAdapter() *DefaultCouchAdapter {
+func NewCouchAdapter() *DefaultCouchAdaptor {
 	return &DefaultCouchAdapter{}
 }
 
-// Open
+// Open open bucket using config struct
 func (*DefaultCouchAdapter) Open(c *conf.Env) *gocb.Bucket {
 	return c.OpenBucket()
 }
 
-// Get
+// Get invoke gocb.Bucket.Get
 func (*DefaultCouchAdapter) Get(b *gocb.Bucket, key string) (cas gocb.Cas, data []byte, ok bool) {
 	if b == nil {
 		log.Printf("CouchBase Connections may not be establlished. skip this process.")
@@ -35,7 +35,7 @@ func (*DefaultCouchAdapter) Get(b *gocb.Bucket, key string) (cas gocb.Cas, data 
 	return cas, data, true
 }
 
-// Insert
+// Insert invoke gocb.Bucket.Insert
 func (*DefaultCouchAdapter) Insert(b *gocb.Bucket, key string, data []byte, expiry uint32) (cas gocb.Cas, ok bool) {
 	if b == nil {
 		return 0, false
@@ -50,7 +50,7 @@ func (*DefaultCouchAdapter) Insert(b *gocb.Bucket, key string, data []byte, expi
 	return cas, true
 }
 
-// Upsert
+// Upsert invoke gocb.Bucket.Upsert
 func Upsert(b *gocb.Bucket, key string, data []byte, expiry uint32) (cas gocb.Cas, ok bool) {
 	if b == nil {
 		return 0, false
