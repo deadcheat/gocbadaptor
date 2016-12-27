@@ -9,8 +9,8 @@ import (
 
 // DefaultCouchAdaptor default adaptor struct
 type DefaultCouchAdaptor struct {
-	Env    *conf.Env
-	Bucket *gocb.Bucket
+	Environment *conf.Env
+	Bucket      *gocb.Bucket
 }
 
 // NewDefaultCouchAdaptor 新しいAdaptorインスタンスを作成
@@ -18,22 +18,27 @@ func NewDefaultCouchAdaptor() *DefaultCouchAdaptor {
 	return &DefaultCouchAdaptor{}
 }
 
+// Env return Env
+func (adaptor DefaultCouchAdaptor) Env() *conf.Env {
+	return adaptor.Environment
+}
+
 // Open open adaptor.Bucket using arguments
 func (adaptor DefaultCouchAdaptor) Open(connection, bucket, password *string, expiry uint32) CouchBaseAdaptor {
-	adaptor.Env = &conf.Env{
+	adaptor.Environment = &conf.Env{
 		ConnectString: connection,
 		BucketName:    bucket,
 		Password:      password,
 		CacheExpiry:   expiry,
 	}
-	e := *adaptor.Env
+	e := *adaptor.Environment
 	adaptor.Bucket = e.OpenBucket()
 	return adaptor
 }
 
 // OpenWithConfig open adaptor.Bucket using config struct
 func (adaptor DefaultCouchAdaptor) OpenWithConfig(env *conf.Env) CouchBaseAdaptor {
-	adaptor.Env = env
+	adaptor.Environment = env
 	e := *env
 	adaptor.Bucket = e.OpenBucket()
 	return adaptor
@@ -61,7 +66,7 @@ func (adaptor DefaultCouchAdaptor) Insert(key string, data []byte) (cas gocb.Cas
 		return 0, false
 	}
 	b := *adaptor.Bucket
-	cas, err := b.Insert(key, data, adaptor.Env.CacheExpiry)
+	cas, err := b.Insert(key, data, adaptor.Environment.CacheExpiry)
 	if err != nil {
 		log.Printf("Couldn't insert for key: %s or err: %+v \n", key, err)
 		return cas, false
@@ -76,7 +81,7 @@ func (adaptor DefaultCouchAdaptor) Upsert(key string, data []byte) (cas gocb.Cas
 		return 0, false
 	}
 	b := *adaptor.Bucket
-	cas, err := b.Upsert(key, data, adaptor.Env.CacheExpiry)
+	cas, err := b.Upsert(key, data, adaptor.Environment.CacheExpiry)
 	if err != nil {
 		log.Printf("Couldn't upsert for key: %s or err: %+v \n", key, err)
 		return cas, false
@@ -104,6 +109,6 @@ func (adaptor DefaultCouchAdaptor) N1qlQuery(q string, params interface{}) (r go
 
 // ExpiresIn overwrite Env.CacheExpiry
 func (adaptor DefaultCouchAdaptor) ExpiresIn(sec uint32) CouchBaseAdaptor {
-	adaptor.Env.CacheExpiry = sec
+	adaptor.Environment.CacheExpiry = sec
 	return adaptor
 }
