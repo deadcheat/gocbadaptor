@@ -32,7 +32,7 @@ func main() {
 
 	var couch gocbadaptor.CouchBaseAdaptor
 
-	couch = gocbadaptor.NewDefaultCouchAdaptor().Open(&connection, &bucketname, &password, expiry)
+	couch = gocbadaptor.NewDefaultCouchAdaptor().Open(connection, bucketname, password, expiry)
 
 	var val []byte
 
