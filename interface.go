@@ -12,4 +12,5 @@ type CouchAdaptor interface {
 	Get(b *gocb.Bucket, key string) (cas gocb.Cas, data []byte, ok bool)
 	Insert(b *gocb.Bucket, key string, data []byte, expiry uint32) (cas gocb.Cas, ok bool)
 	Upsert(b *gocb.Bucket, key string, data []byte, expiry uint32) (cas gocb.Cas, ok bool)
+	N1qlQuery(b *gocb.Bucket, q string, params interface{}) (gocb.QueryResults, error)
 }

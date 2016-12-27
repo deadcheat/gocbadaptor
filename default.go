@@ -42,7 +42,6 @@ func (*DefaultCouchAdaptor) Insert(b *gocb.Bucket, key string, data []byte, expi
 	}
 	cas, err := b.Insert(key, data, expiry)
 	if err != nil {
-		log.Println(err)
 		log.Printf("Couldn't insert for key: %s or err: %+v \n", key, err)
 		return cas, false
 	}
@@ -57,10 +56,21 @@ func (*DefaultCouchAdaptor) Upsert(b *gocb.Bucket, key string, data []byte, expi
 	}
 	cas, err := b.Upsert(key, data, expiry)
 	if err != nil {
-		log.Println(err)
 		log.Printf("Couldn't upsert for key: %s or err: %+v \n", key, err)
 		return cas, false
 	}
 	log.Printf("insert to bucket key: %s", key)
 	return cas, true
+}
+
+// N1qlQuery prepare query and execute
+func (*DefaultCouchAdaptor) N1qlQuery(b *gocb.Bucket, q string, params interface{}) (r gocb.QueryResults, err error) {
+	nq := gocb.NewN1qlQuery(q)
+	r, err = b.ExecuteN1qlQuery(nq, params)
+	if err != nil {
+		log.Printf("Couldn't execute query for query: %s params: %+v or err: %+v \n", q, params, err)
+		return r, err
+	}
+	log.Printf("succeeded to execute query: %s , params: %+v ,  result: %+v", q, params, r.Metrics())
+	return r, err
 }
