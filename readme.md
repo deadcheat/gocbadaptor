@@ -38,10 +38,10 @@ func main() {
 
 	key := "testkey"
 
-	val = []byte("test1")
+	val = []byte("{\"name\":\"test1\"}")
 
 	// execute N1qlQuery
-	r, err := couch.N1qlQuery("delete from "+bucketname, nil)
+	r, _ := couch.N1qlQuery("delete from "+bucketname, nil)
 
 	// insert
 	cas, ok := couch.Insert(key, val)
@@ -53,23 +53,32 @@ func main() {
 
 	fmt.Println(cas, string(data), ok)
 
-	val = []byte("test2")
+	key2 := "testkey2"
+	val = []byte("{\"name\":\"test2\"}")
 
 	// upsert
-	cas, ok = couch.Upsert(key, val)
+	cas, ok = couch.Upsert(key2, val)
 
-	fmt.Println(cas, ok)
+	pp.Println(cas, ok)
 
 	cas, data, ok = couch.Get(key)
 
 	fmt.Println(cas, string(data), ok)
 
-	// execute N1qlQuery
-	r, err = couch.N1qlQuery("select * from "+bucketname, nil)
+	couch.Bucket().Close()
 
-	var res []byte
-	r.Next(&res)
-	fmt.Println(res, err, r.Metrics().ResultCount)
+	couch = gocbadaptor.NewDefaultCouchAdaptor().OpenWithConfig(couch.Env())
+
+	// execute N1qlQuery
+	r, _ = couch.N1qlQuery("select META("+bucketname+").id, name from `"+bucketname+"` WHERE name like 'test%'", nil)
+
+	var row interface{}
+
+	for r.Next(&row) {
+		pp.Println(row)
+	}
+	r.Close()
+	pp.Println(r.Metrics().ResultSize)
 
 }
 
