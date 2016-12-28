@@ -9,67 +9,118 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// Mock of CouchAdaptor interface
-type MockCouchAdaptor struct {
+// Mock of CouchBaseAdaptor interface
+type MockCouchBaseAdaptor struct {
 	ctrl     *gomock.Controller
-	recorder *_MockCouchAdaptorRecorder
+	recorder *_MockCouchBaseAdaptorRecorder
 }
 
-// Recorder for MockCouchAdaptor (not exported)
-type _MockCouchAdaptorRecorder struct {
-	mock *MockCouchAdaptor
+// Recorder for MockCouchBaseAdaptor (not exported)
+type _MockCouchBaseAdaptorRecorder struct {
+	mock *MockCouchBaseAdaptor
 }
 
-func NewMockCouchAdaptor(ctrl *gomock.Controller) *MockCouchAdaptor {
-	mock := &MockCouchAdaptor{ctrl: ctrl}
-	mock.recorder = &_MockCouchAdaptorRecorder{mock}
+func NewMockCouchBaseAdaptor(ctrl *gomock.Controller) *MockCouchBaseAdaptor {
+	mock := &MockCouchBaseAdaptor{ctrl: ctrl}
+	mock.recorder = &_MockCouchBaseAdaptorRecorder{mock}
 	return mock
 }
 
-func (_m *MockCouchAdaptor) EXPECT() *_MockCouchAdaptorRecorder {
+func (_m *MockCouchBaseAdaptor) EXPECT() *_MockCouchBaseAdaptorRecorder {
 	return _m.recorder
 }
 
-func (_m *MockCouchAdaptor) Open(couchenv *conf.Env) *gocb.Bucket {
-	ret := _m.ctrl.Call(_m, "Open", couchenv)
+func (_m *MockCouchBaseAdaptor) Open(connection string, bucket string, password string, expiry uint32) CouchBaseAdaptor {
+	ret := _m.ctrl.Call(_m, "Open", connection, bucket, password, expiry)
+	ret0, _ := ret[0].(CouchBaseAdaptor)
+	return ret0
+}
+
+func (_mr *_MockCouchBaseAdaptorRecorder) Open(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Open", arg0, arg1, arg2, arg3)
+}
+
+func (_m *MockCouchBaseAdaptor) OpenWithConfig(env *conf.Env) CouchBaseAdaptor {
+	ret := _m.ctrl.Call(_m, "OpenWithConfig", env)
+	ret0, _ := ret[0].(CouchBaseAdaptor)
+	return ret0
+}
+
+func (_mr *_MockCouchBaseAdaptorRecorder) OpenWithConfig(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "OpenWithConfig", arg0)
+}
+
+func (_m *MockCouchBaseAdaptor) Env() *conf.Env {
+	ret := _m.ctrl.Call(_m, "Env")
+	ret0, _ := ret[0].(*conf.Env)
+	return ret0
+}
+
+func (_mr *_MockCouchBaseAdaptorRecorder) Env() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Env")
+}
+
+func (_m *MockCouchBaseAdaptor) Bucket() *gocb.Bucket {
+	ret := _m.ctrl.Call(_m, "Bucket")
 	ret0, _ := ret[0].(*gocb.Bucket)
 	return ret0
 }
 
-func (_mr *_MockCouchAdaptorRecorder) Open(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Open", arg0)
+func (_mr *_MockCouchBaseAdaptorRecorder) Bucket() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Bucket")
 }
 
-func (_m *MockCouchAdaptor) Get(b *gocb.Bucket, key string) (gocb.Cas, []byte, bool) {
-	ret := _m.ctrl.Call(_m, "Get", b, key)
+func (_m *MockCouchBaseAdaptor) ExpiresIn(sec uint32) CouchBaseAdaptor {
+	ret := _m.ctrl.Call(_m, "ExpiresIn", sec)
+	ret0, _ := ret[0].(CouchBaseAdaptor)
+	return ret0
+}
+
+func (_mr *_MockCouchBaseAdaptorRecorder) ExpiresIn(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ExpiresIn", arg0)
+}
+
+func (_m *MockCouchBaseAdaptor) Get(key string) (gocb.Cas, []byte, bool) {
+	ret := _m.ctrl.Call(_m, "Get", key)
 	ret0, _ := ret[0].(gocb.Cas)
 	ret1, _ := ret[1].([]byte)
 	ret2, _ := ret[2].(bool)
 	return ret0, ret1, ret2
 }
 
-func (_mr *_MockCouchAdaptorRecorder) Get(arg0, arg1 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Get", arg0, arg1)
+func (_mr *_MockCouchBaseAdaptorRecorder) Get(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Get", arg0)
 }
 
-func (_m *MockCouchAdaptor) Insert(b *gocb.Bucket, key string, data []byte, expiry uint32) (gocb.Cas, bool) {
-	ret := _m.ctrl.Call(_m, "Insert", b, key, data, expiry)
+func (_m *MockCouchBaseAdaptor) Insert(key string, data []byte) (gocb.Cas, bool) {
+	ret := _m.ctrl.Call(_m, "Insert", key, data)
 	ret0, _ := ret[0].(gocb.Cas)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
-func (_mr *_MockCouchAdaptorRecorder) Insert(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Insert", arg0, arg1, arg2, arg3)
+func (_mr *_MockCouchBaseAdaptorRecorder) Insert(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Insert", arg0, arg1)
 }
 
-func (_m *MockCouchAdaptor) Upsert(b *gocb.Bucket, key string, data []byte, expiry uint32) (gocb.Cas, bool) {
-	ret := _m.ctrl.Call(_m, "Upsert", b, key, data, expiry)
+func (_m *MockCouchBaseAdaptor) Upsert(key string, data []byte) (gocb.Cas, bool) {
+	ret := _m.ctrl.Call(_m, "Upsert", key, data)
 	ret0, _ := ret[0].(gocb.Cas)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
-func (_mr *_MockCouchAdaptorRecorder) Upsert(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "Upsert", arg0, arg1, arg2, arg3)
+func (_mr *_MockCouchBaseAdaptorRecorder) Upsert(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "Upsert", arg0, arg1)
+}
+
+func (_m *MockCouchBaseAdaptor) N1qlQuery(q string, params interface{}) (gocb.QueryResults, error) {
+	ret := _m.ctrl.Call(_m, "N1qlQuery", q, params)
+	ret0, _ := ret[0].(gocb.QueryResults)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockCouchBaseAdaptorRecorder) N1qlQuery(arg0, arg1 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "N1qlQuery", arg0, arg1)
 }
