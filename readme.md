@@ -32,7 +32,11 @@ func main() {
 
 	var couch gocbadaptor.CouchBaseAdaptor
 
-	couch = gocbadaptor.NewDefaultCouchAdaptor().Open(connection, bucketname, password, expiry)
+	couch = gocbadaptor.NewDefaultCouchAdaptor()
+	if err := couch.Open(connection, bucketname, password, expiry); err != nil {
+		log.Println("err")
+		return
+	}
 
 	var val []byte
 
@@ -46,39 +50,45 @@ func main() {
 	// insert
 	cas, ok := couch.Insert(key, val)
 
-	fmt.Println(cas, ok)
+	fmt.Println("insert", cas, ok)
 
 	// get
 	cas, data, ok := couch.Get(key)
 
-	fmt.Println(cas, string(data), ok)
+	fmt.Println("get", cas, string(data), ok)
 
-	key2 := "testkey2"
+	// key2 := "testkey2"
 	val = []byte("{\"name\":\"test2\"}")
 
 	// upsert
-	cas, ok = couch.Upsert(key2, val)
+	cas, ok = couch.Upsert(key, val)
 
-	pp.Println(cas, ok)
+	fmt.Println("upsert", cas, ok)
 
 	cas, data, ok = couch.Get(key)
 
-	fmt.Println(cas, string(data), ok)
+	fmt.Println("get", cas, string(data), ok)
 
 	couch.Bucket().Close()
 
-	couch = gocbadaptor.NewDefaultCouchAdaptor().OpenWithConfig(couch.Env())
+	if err := couch.OpenWithConfig(couch.Env()); err != nil {
+		log.Println("err")
+		return
+	}
 
 	// execute N1qlQuery
-	r, _ = couch.N1qlQuery("select META("+bucketname+").id, name from `"+bucketname+"` WHERE name like 'test%'", nil)
+	r, err := couch.N1qlQuery("select META("+couch.Env().BucketName+").id, name from `"+couch.Env().BucketName+"` WHERE name like 'test%'", nil)
+	if err != nil {
+		log.Println("err")
+		return
+	}
 
 	var row interface{}
 
 	for r.Next(&row) {
-		pp.Println(row)
+		fmt.Println(row)
 	}
 	r.Close()
-	pp.Println(r.Metrics().ResultSize)
 
 }
 
