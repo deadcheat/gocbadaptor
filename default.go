@@ -50,46 +50,46 @@ func (adaptor *DefaultCouchAdaptor) OpenWithConfig(env *conf.Env) (err error) {
 }
 
 // Get invoke gocb.adaptor.Bucket.Get
-func (adaptor *DefaultCouchAdaptor) Get(key string) (cas gocb.Cas, data []byte, ok bool) {
+func (adaptor *DefaultCouchAdaptor) Get(key string) (cas gocb.Cas, data []byte, ok bool, err error) {
 	if adaptor.CouchBucket == nil {
 		log.Printf("CouchBase Connections may not be establlished. skip this process.")
-		return 0, nil, false
+		return 0, nil, false, nil
 	}
 	b := *adaptor.CouchBucket
-	cas, err := b.Get(key, &data)
+	cas, err = b.Get(key, &data)
 	if err != nil {
 		log.Printf("Didn't hit any data for key: %s or err: %+v \n", key, err)
-		return cas, nil, false
+		return cas, nil, false, err
 	}
 	log.Printf("hit key: %s", key)
-	return cas, data, true
+	return cas, data, true, nil
 }
 
 // Insert invoke gocb.adaptor.Bucket.Insert
-func (adaptor *DefaultCouchAdaptor) Insert(key string, data []byte) (cas gocb.Cas, ok bool) {
+func (adaptor *DefaultCouchAdaptor) Insert(key string, data []byte) (cas gocb.Cas, ok bool, err error) {
 	if adaptor.CouchBucket == nil {
-		return 0, false
+		return 0, false, nil
 	}
 	b := *adaptor.CouchBucket
-	cas, err := b.Insert(key, data, adaptor.Environment.CacheExpiry)
+	cas, err = b.Insert(key, data, adaptor.Environment.CacheExpiry)
 	if err != nil {
 		log.Printf("Couldn't insert for key: %s or err: %+v \n", key, err)
-		return cas, false
+		return cas, false, err
 	}
 	log.Printf("insert to adaptor.CouchBucket key: %s", key)
-	return cas, true
+	return cas, true, nil
 }
 
 // Upsert invoke gocb.adaptor.Bucket.Upsert
-func (adaptor *DefaultCouchAdaptor) Upsert(key string, data []byte) (cas gocb.Cas, ok bool) {
+func (adaptor *DefaultCouchAdaptor) Upsert(key string, data []byte) (cas gocb.Cas, ok bool, err error) {
 	b := *adaptor.CouchBucket
-	cas, err := b.Upsert(key, data, adaptor.Environment.CacheExpiry)
+	cas, err = b.Upsert(key, data, adaptor.Environment.CacheExpiry)
 	if err != nil {
 		log.Printf("Couldn't upsert for key: %s or err: %+v \n", key, err)
-		return cas, false
+		return cas, false, err
 	}
 	log.Printf("upsert to adaptor.CouchBucket key: %s", key)
-	return cas, true
+	return cas, true, nil
 }
 
 // N1qlQuery prepare query and execute

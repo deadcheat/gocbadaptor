@@ -58,23 +58,25 @@ func (_mr *_MockCouchBaseAdaptorRecorder) ExpiresIn(arg0 interface{}) *gomock.Ca
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ExpiresIn", arg0)
 }
 
-func (_m *MockCouchBaseAdaptor) Get(key string) (gocb.Cas, []byte, bool) {
+func (_m *MockCouchBaseAdaptor) Get(key string) (gocb.Cas, []byte, bool, error) {
 	ret := _m.ctrl.Call(_m, "Get", key)
 	ret0, _ := ret[0].(gocb.Cas)
 	ret1, _ := ret[1].([]byte)
 	ret2, _ := ret[2].(bool)
-	return ret0, ret1, ret2
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
 }
 
 func (_mr *_MockCouchBaseAdaptorRecorder) Get(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Get", arg0)
 }
 
-func (_m *MockCouchBaseAdaptor) Insert(key string, data []byte) (gocb.Cas, bool) {
+func (_m *MockCouchBaseAdaptor) Insert(key string, data []byte) (gocb.Cas, bool, error) {
 	ret := _m.ctrl.Call(_m, "Insert", key, data)
 	ret0, _ := ret[0].(gocb.Cas)
 	ret1, _ := ret[1].(bool)
-	return ret0, ret1
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 func (_mr *_MockCouchBaseAdaptorRecorder) Insert(arg0, arg1 interface{}) *gomock.Call {
@@ -112,11 +114,12 @@ func (_mr *_MockCouchBaseAdaptorRecorder) OpenWithConfig(arg0 interface{}) *gomo
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "OpenWithConfig", arg0)
 }
 
-func (_m *MockCouchBaseAdaptor) Upsert(key string, data []byte) (gocb.Cas, bool) {
+func (_m *MockCouchBaseAdaptor) Upsert(key string, data []byte) (gocb.Cas, bool, error) {
 	ret := _m.ctrl.Call(_m, "Upsert", key, data)
 	ret0, _ := ret[0].(gocb.Cas)
 	ret1, _ := ret[1].(bool)
-	return ret0, ret1
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 func (_mr *_MockCouchBaseAdaptorRecorder) Upsert(arg0, arg1 interface{}) *gomock.Call {
