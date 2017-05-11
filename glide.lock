@@ -1,14 +1,16 @@
-hash: 28943f5dc0f23ed11c1b8f62b1c5b00ec32468e66e6083e60701a63e122dd626
-updated: 2016-12-27T21:50:11.688902962+09:00
+hash: 2687e4363cb1de03b7dda8aedfea79ee2bdd99488d3d0a12f8093fa2123aa993
+updated: 2017-05-11T17:13:52.154552373+09:00
 imports:
 - name: github.com/couchbase/gocb
-  version: 6fca8af693ca20d33fd8427a09636362061a3b71
+  version: f6356f3ae8be06a2a579541b13705fac80607422
 - name: github.com/golang/mock
   version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
   subpackages:
   - gomock
-- name: gopkg.in/brett19/jsonx.v1
+- name: gopkg.in/couchbase/gocbcore.v6
+  version: 3b830812a505908219043b2d004e88ad3964e049
+- name: gopkg.in/couchbaselabs/gocbconnstr.v1
+  version: f601f521a1ab1c99260c63441e1bbdbbc48b1bd9
+- name: gopkg.in/couchbaselabs/jsonx.v1
   version: 5b7baa20429a46a5543ee259664cc86502738cad
-- name: gopkg.in/couchbase/gocbcore.v2
-  version: 22d72f05785ba26be033aa8b6726435b5e50a7a0
 testImports: []
