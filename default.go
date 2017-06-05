@@ -1,6 +1,7 @@
 package gocbadaptor
 
 import (
+	"errors"
 	"log"
 
 	"github.com/couchbase/gocb"
@@ -19,43 +20,49 @@ func NewDefaultCouchAdaptor() *DefaultCouchAdaptor {
 }
 
 // Env return Environment
-func (adaptor *DefaultCouchAdaptor) Env() *conf.Env {
-	return adaptor.Environment
+func (a *DefaultCouchAdaptor) Env() *conf.Env {
+	return a.Environment
 }
 
 // Bucket return CouchBucket
-func (adaptor *DefaultCouchAdaptor) Bucket() *gocb.Bucket {
-	return adaptor.CouchBucket
+func (a *DefaultCouchAdaptor) Bucket() *gocb.Bucket {
+	return a.CouchBucket
 }
 
-// Open open adaptor.CouchBucket using arguments
-func (adaptor *DefaultCouchAdaptor) Open(connection, bucket, password string, expiry uint32) (err error) {
-	adaptor.Environment = &conf.Env{
+// Open open a.CouchBucket using arguments
+func (a *DefaultCouchAdaptor) Open(connection, bucket, password string, expiry uint32) (err error) {
+	if a == nil {
+		return
+	}
+	a.Environment = &conf.Env{
 		ConnectString: connection,
 		BucketName:    bucket,
 		Password:      password,
 		CacheExpiry:   expiry,
 	}
-	e := *adaptor.Environment
-	adaptor.CouchBucket, err = e.OpenBucket()
+	e := *a.Environment
+	a.CouchBucket, err = e.OpenBucket()
 	return
 }
 
-// OpenWithConfig open adaptor.CouchBucket using config struct
-func (adaptor *DefaultCouchAdaptor) OpenWithConfig(env *conf.Env) (err error) {
-	adaptor.Environment = env
+// OpenWithConfig open a.CouchBucket using config struct
+func (a *DefaultCouchAdaptor) OpenWithConfig(env *conf.Env) (err error) {
+	if a == nil {
+		return
+	}
+	a.Environment = env
 	e := *env
-	adaptor.CouchBucket, err = e.OpenBucket()
+	a.CouchBucket, err = e.OpenBucket()
 	return
 }
 
-// Get invoke gocb.adaptor.Bucket.Get
-func (adaptor *DefaultCouchAdaptor) Get(key string) (cas gocb.Cas, data []byte, err error) {
-	if adaptor.CouchBucket == nil {
+// Get invoke gocb.a.Bucket.Get
+func (a *DefaultCouchAdaptor) Get(key string) (cas gocb.Cas, data []byte, err error) {
+	if a == nil || a.CouchBucket == nil {
 		log.Printf("CouchBase Connections may not be establlished. skip this process.")
 		return 0, nil, nil
 	}
-	b := *adaptor.CouchBucket
+	b := *a.CouchBucket
 	cas, err = b.Get(key, &data)
 	if err != nil {
 		log.Printf("Didn't hit any data for key: %s or err: %+v \n", key, err)
@@ -65,40 +72,50 @@ func (adaptor *DefaultCouchAdaptor) Get(key string) (cas gocb.Cas, data []byte, 
 	return cas, data, nil
 }
 
-// Insert invoke gocb.adaptor.Bucket.Insert
-func (adaptor *DefaultCouchAdaptor) Insert(key string, data []byte) (cas gocb.Cas, err error) {
-	if adaptor.CouchBucket == nil {
-		return 0, nil
-	}
-	b := *adaptor.CouchBucket
-	cas, err = b.Insert(key, data, adaptor.Environment.CacheExpiry)
-	if err != nil {
-		log.Printf("Couldn't insert for key: %s or err: %+v \n", key, err)
-		return cas, err
-	}
-	log.Printf("insert to adaptor.CouchBucket key: %s", key)
-	return cas, nil
+// Insert invoke gocb.a.Bucket.Insert
+func (a *DefaultCouchAdaptor) Insert(k string, d []byte) (gocb.Cas, error) {
+	return a.update(insert, k, d)
 }
 
-// Upsert invoke gocb.adaptor.Bucket.Upsert
-func (adaptor *DefaultCouchAdaptor) Upsert(key string, data []byte) (cas gocb.Cas, err error) {
-	b := *adaptor.CouchBucket
-	cas, err = b.Upsert(key, data, adaptor.Environment.CacheExpiry)
-	if err != nil {
-		log.Printf("Couldn't upsert for key: %s or err: %+v \n", key, err)
-		return cas, err
+// Upsert invoke gocb.a.Bucket.Upsert
+func (a *DefaultCouchAdaptor) Upsert(k string, d []byte) (gocb.Cas, error) {
+	return a.update(upsert, k, d)
+}
+
+type updateMode int
+
+const (
+	insert updateMode = iota
+	upsert
+)
+
+func (a *DefaultCouchAdaptor) update(mode updateMode, key string, data []byte) (c gocb.Cas, e error) {
+	if a == nil || a.CouchBucket == nil {
+		return 0, nil
 	}
-	log.Printf("upsert to adaptor.CouchBucket key: %s", key)
-	return cas, nil
+	b := *a.CouchBucket
+	if mode == insert {
+		c, e = b.Insert(key, data, a.Environment.CacheExpiry)
+	} else if mode == upsert {
+		c, e = b.Upsert(key, data, a.Environment.CacheExpiry)
+	} else {
+		log.Fatal(errors.New("update should not call insert or upsert mode"))
+	}
+	if e != nil {
+		log.Printf("Couldn't send data for key: %s or err: %+v \n", key, e)
+		return c, e
+	}
+	log.Printf("sent data to a.CouchBucket key: %s", key)
+	return c, nil
 }
 
 // N1qlQuery prepare query and execute
-func (adaptor *DefaultCouchAdaptor) N1qlQuery(q string, params interface{}) (r gocb.QueryResults, err error) {
-	if adaptor.CouchBucket == nil {
+func (a *DefaultCouchAdaptor) N1qlQuery(q string, params interface{}) (r gocb.QueryResults, err error) {
+	if a == nil || a.CouchBucket == nil {
 		return nil, nil
 	}
 	nq := gocb.NewN1qlQuery(q)
-	b := *adaptor.CouchBucket
+	b := *a.CouchBucket
 	r, err = b.ExecuteN1qlQuery(nq, params)
 	if err != nil {
 		log.Printf("Couldn't execute query for query: %s params: %+v or err: %+v \n", q, params, err)
@@ -109,6 +126,6 @@ func (adaptor *DefaultCouchAdaptor) N1qlQuery(q string, params interface{}) (r g
 }
 
 // ExpiresIn overwrite Env.CacheExpiry
-func (adaptor *DefaultCouchAdaptor) ExpiresIn(sec uint32) {
-	adaptor.Environment.CacheExpiry = sec
+func (a *DefaultCouchAdaptor) ExpiresIn(sec uint32) {
+	a.Environment.CacheExpiry = sec
 }
