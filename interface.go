@@ -6,7 +6,7 @@ import (
 	"github.com/couchbase/gocb"
 )
 
-// CouchBaseAdaptor CouchBase接続アダプタ
+// CouchBaseAdaptor CouchBase connect adaptor
 type CouchBaseAdaptor interface {
 	Bucket() *gocb.Bucket
 	Env() *conf.Env
@@ -17,4 +17,10 @@ type CouchBaseAdaptor interface {
 	Open(connection, bucket, password string, expiry uint32) (err error)
 	OpenWithConfig(env *conf.Env) (err error)
 	Upsert(key string, data []byte) (cas gocb.Cas, err error)
+}
+
+// Loggerable logging interface
+type Loggerable interface {
+	Log(...interface{})
+	Logf(format string, v ...interface{})
 }

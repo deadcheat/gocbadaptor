@@ -12,16 +12,22 @@ import (
 type DefaultCouchAdaptor struct {
 	Environment *conf.Env
 	CouchBucket *gocb.Bucket
+	Loggerable
 }
 
 // NewDefaultCouchAdaptor 新しいAdaptorインスタンスを作成
 func NewDefaultCouchAdaptor() *DefaultCouchAdaptor {
-	return &DefaultCouchAdaptor{}
+	return &DefaultCouchAdaptor{Loggerable: NewDefaultLogger(true)}
 }
 
 // Env return Environment
 func (a *DefaultCouchAdaptor) Env() *conf.Env {
 	return a.Environment
+}
+
+// SetLoggerable setting Logging Interface
+func (a *DefaultCouchAdaptor) SetLoggerable(l Loggerable) {
+	a.Loggerable = l
 }
 
 // Bucket return CouchBucket
@@ -59,16 +65,16 @@ func (a *DefaultCouchAdaptor) OpenWithConfig(env *conf.Env) (err error) {
 // Get invoke gocb.a.Bucket.Get
 func (a *DefaultCouchAdaptor) Get(key string) (cas gocb.Cas, data []byte, err error) {
 	if a == nil || a.CouchBucket == nil {
-		log.Printf("CouchBase Connections may not be establlished. skip this process.")
+		a.Logf("CouchBase Connections may not be establlished. skip this process.")
 		return 0, nil, nil
 	}
 	b := *a.CouchBucket
 	cas, err = b.Get(key, &data)
 	if err != nil {
-		log.Printf("Didn't hit any data for key: %s or err: %+v \n", key, err)
+		a.Logf("Didn't hit any data for key: %s or err: %+v \n", key, err)
 		return cas, nil, err
 	}
-	log.Printf("hit key: %s", key)
+	a.Logf("hit key: %s", key)
 	return cas, data, nil
 }
 
@@ -102,10 +108,10 @@ func (a *DefaultCouchAdaptor) update(mode updateMode, key string, data []byte) (
 		log.Fatal(errors.New("update should not call insert or upsert mode"))
 	}
 	if e != nil {
-		log.Printf("Couldn't send data for key: %s or err: %+v \n", key, e)
+		a.Logf("Couldn't send data for key: %s or err: %+v \n", key, e)
 		return c, e
 	}
-	log.Printf("sent data to a.CouchBucket key: %s", key)
+	a.Logf("sent data to a.CouchBucket key: %s", key)
 	return c, nil
 }
 
@@ -118,10 +124,10 @@ func (a *DefaultCouchAdaptor) N1qlQuery(q string, params interface{}) (r gocb.Qu
 	b := *a.CouchBucket
 	r, err = b.ExecuteN1qlQuery(nq, params)
 	if err != nil {
-		log.Printf("Couldn't execute query for query: %s params: %+v or err: %+v \n", q, params, err)
+		a.Logf("Couldn't execute query for query: %s params: %+v or err: %+v \n", q, params, err)
 		return r, err
 	}
-	log.Printf("succeeded to execute query: %s , params: %+v", q, params)
+	a.Logf("succeeded to execute query: %s , params: %+v", q, params)
 	return r, err
 }
 
