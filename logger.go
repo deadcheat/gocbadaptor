@@ -8,8 +8,8 @@ type SilentLogger struct{}
 // Log but say nothing
 func (s *SilentLogger) Log(v ...interface{}) {}
 
-// Log but say nothing with format either
-func (s *SilentLogger) Logf(v ...interface{}) {}
+// Logf but say nothing with format either
+func (s *SilentLogger) Logf(f string, v ...interface{}) {}
 
 // DefaultLogger type-default logger
 type DefaultLogger struct {
