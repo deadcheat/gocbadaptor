@@ -117,10 +117,18 @@ func (a *DefaultCouchAdaptor) update(mode updateMode, key string, data []byte) (
 
 // N1qlQuery prepare query and execute
 func (a *DefaultCouchAdaptor) N1qlQuery(q string, params interface{}) (r gocb.QueryResults, err error) {
+	return a.N1qlQueryWithMode(nil, q, params)
+}
+
+// N1qlQuery prepare query and execute
+func (a *DefaultCouchAdaptor) N1qlQueryWithMode(m *gocb.ConsistencyMode, q string, params interface{}) (r gocb.QueryResults, err error) {
 	if a == nil || a.CouchBucket == nil {
 		return nil, nil
 	}
 	nq := gocb.NewN1qlQuery(q)
+	if m != nil {
+		nq.Consistency(*m)
+	}
 	b := *a.CouchBucket
 	r, err = b.ExecuteN1qlQuery(nq, params)
 	if err != nil {
